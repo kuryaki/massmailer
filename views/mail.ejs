@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/components/bootstrap/bootstrap/css/bootstrap.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Please add your email information</p>
+    <form action="/email" method="POST">
+
+      <label for="json_body">Add your data for the email in JSON format</label>
+      <textarea name="json_body" id="json_body" cols="30" rows="10" placeholder="ex. [{'name':'Tomas','email':'tordonez01@gmail.com'}, {'name':'Alejandro','email':'alejo8591@gmail.com'}"></textarea>
+
+      <label for="subject">Add the subject for the email</label>
+      <input type="text" name="subject" id="subject" placeholder="ex. Codetag contact me now!">
+
+      <label for="email_body">Add the body of your email</label>
+      <textarea name="email_body" id="email_body" cols="30" rows="10" placeholder="ex. Hello |name| nice to meet you last weekend"></textarea>
+
+      <label for="signature">Add the signature of your email</label>
+      <textarea name="signature" id="signature" cols="30" rows="10" placeholder="ex. Hope to see you soon - David"></textarea>
+
+      <input type="submit" value="Send">
+    </form>
+  </body>
+</html>
