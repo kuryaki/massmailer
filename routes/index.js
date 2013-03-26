@@ -3,6 +3,13 @@ var url = require('url');
 var request = require('superagent');
 var db = require('redis').createClient();
 
+//App configuration
+var config = {
+  client_id: '189084383123.apps.googleusercontent.com',
+  client_secret:'bq7rXcxSUqo-lZ7PntMsBqN1',
+  redirect_uri: 'http://localhost:3000/oauth2callback',
+  grant_type: 'authorization_code'
+};
 
 //Worried about this scope
 var smtpTransport = '';
@@ -25,13 +32,6 @@ exports.login = function(req, res){
   };
   var href = url.format(google_auth);
   res.send("<a href="+href+">Login</a>");
-};
-
-var config = {
-  client_id: '189084383123.apps.googleusercontent.com',
-  client_secret:'bq7rXcxSUqo-lZ7PntMsBqN1',
-  redirect_uri: 'http://localhost:3000/oauth2callback',
-  grant_type: 'authorization_code'
 };
 
 exports.oauthcallback = function(req, res){
@@ -94,18 +94,37 @@ exports.index = function(req, res){
 };
 
 exports.send_email = function(req, res){
-  var email_data = JSON.parse(req.body.json_body.split('\'').join('"'));
-  email_data.forEach(function(element){
+  var raw_data = req.body.json_body.split('None').join("' '").split('u\'').join('\'').split('\'').join('"').split('""').join('"');
+  console.log(raw_data);
+  var email_data = JSON.parse(raw_data); // The U split should not be done...JSON not pydict
 
+  email_data.forEach(function(element){
     var email_body = req.body.email_body;
-    email_body = email_body.split('|name|').join(element.name).split('|repo|').join(element.repo); //replace for all
-    email_subject = req.body.subject.split('|name|').join(element.name).split('|repo|').join(element.repo);
+    var email_subject = req.body.subject;
+    var email_signature = '\n\n'+req.body.signature;
+    var email_address = '';
+
+    for(var key in element){
+      // Needs to be removed here just to process the current structure given
+      if(key==='user_name'){
+        element[key] = element[key].split(' ')[0];
+      }
+      if(key==='best_repo'){
+        element[key] = element[key].split('/')[1];
+      }
+      if(key==='user_email'){
+        email_address = element[key] ? element[key] : element['emails'][0];
+      }
+      email_body = email_body.split('|'+key+'|').join(element[key]);
+      email_subject = email_subject.split('|'+key+'|').join(element[key]);
+    }
 
     var mailOptions = {
-      from: smtpTransport.options.auth.name + "<" + smtpTransport.options.auth.user + ">", // sender address
-      to: element.email, // list of receivers
+      from: user.name + "<" + user.email + ">", // sender address
+      // to: element.email, // list of receivers
+      to: email_address,
       subject: email_subject, // Subject line
-      text: email_body + '\n\n\n' +req.body.signature // plaintext body
+      text: email_body + email_signature // plaintext body
     };
 
     // send mail with defined transport object
