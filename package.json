@@ -9,6 +9,8 @@
     "express": "3.0.0rc3",
     "ejs": "*",
     "less-middleware": "*",
-    "nodemailer": "~0.3.31"
+    "kue": "~0.5.0",
+    "nodemailer": "~0.4.1",
+    "superagent": "~0.13.0"
   }
 }
