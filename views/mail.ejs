@@ -2,26 +2,54 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/components/bootstrap/bootstrap/css/bootstrap.css' />
+    <link rel="stylesheet" href="/components/bootstrap/bootstrap/css/bootstrap.css" />
+    <script src="/components/jquery/jquery.js"></script>  
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Please add your email information</p>
-    <form action="/email" method="POST">
+    <div class="container">
+      <h1><%= title %></h1>
+      <p>Please add your email information</p>
+      <form action="/email" method="POST">
+        <fieldset>
+          <label for="json_body">Add your data for the email in JSON format</label>
+          <textarea name="json_body" id="json_body" class="input-xxlarge" rows=5 placeholder="ex. [{'name':'Tomas','email':'tordonez01@gmail.com'}, {'name':'Alejandro','email':'alejo8591@gmail.com'}"></textarea>
 
-      <label for="json_body">Add your data for the email in JSON format</label>
-      <textarea name="json_body" id="json_body" cols="30" rows="10" placeholder="ex. [{'name':'Tomas','email':'tordonez01@gmail.com'}, {'name':'Alejandro','email':'alejo8591@gmail.com'}"></textarea>
+          <label for="subject">Add the subject for the email</label>
+          <input type="text" name="subject" id="subject" class="input-xxlarge" placeholder="ex. Codetag contact me now!">
 
-      <label for="subject">Add the subject for the email</label>
-      <input type="text" name="subject" id="subject" placeholder="ex. Codetag contact me now!">
+          <label for="email_body">Add the body of your email</label>
+          <textarea name="email_body" id="email_body" class="input-xxlarge" rows=5 placeholder="ex. Hello |name| nice to meet you last weekend"></textarea>
 
-      <label for="email_body">Add the body of your email</label>
-      <textarea name="email_body" id="email_body" cols="30" rows="10" placeholder="ex. Hello |name| nice to meet you last weekend"></textarea>
+          <label for="signature">Add the signature of your email</label>
+          <textarea name="signature" id="signature" class="input-xxlarge" rows=5 placeholder="ex. Hope to see you soon - David"></textarea>
+          <div class="control-group">
+            <div class="controls">
+              <button type="submit" class="btn btn-primary btn-large">Send</button>
+            </div>
+          </div>
+        </fieldset>
 
-      <label for="signature">Add the signature of your email</label>
-      <textarea name="signature" id="signature" cols="30" rows="10" placeholder="ex. Hope to see you soon - David"></textarea>
-
-      <input type="submit" value="Send">
-    </form>
+      </form>
+    </div>
   </body>
+  <script>
+
+  $('#json_body').on('change', function(){
+
+    var parsed_elements = 0;
+    var parsed_json = ''
+    try{
+      parsed_json = JSON.parse($('#json_body').val(), undefined, 2);
+      parsed_elements = parsed_json.length;
+      console.log(parsed_elements);
+    }
+    catch(error){
+      parsed_json = error.toString();
+      console.log('Error' + parsed_json);
+    }
+
+    $('#json_body').val(JSON.stringify(parsed_json));
+
+  });
+  </script>
 </html>

@@ -29,11 +29,11 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 
+app.get('/campaign', routes.campaign);
+
 app.post('/', routes.transport);
 
 app.post('/email', routes.send_email);
-
-app.get('/login', routes.login);
 
 app.get('/oauth2callback', routes.oauthcallback);
 

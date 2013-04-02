@@ -18,21 +18,6 @@ var refresh_token = '';
 var user = '';
 
 
-exports.login = function(req, res){
-  var google_auth = {
-    protocol: 'https',
-    host: 'accounts.google.com/o/oauth2/auth',
-    query: {
-      scope: 'https://mail.google.com https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
-      redirect_uri: 'http://localhost:3000/oauth2callback',
-      response_type:'code',
-      client_id: '189084383123.apps.googleusercontent.com',
-      access_type: 'offline'
-    }
-  };
-  var href = url.format(google_auth);
-  res.send("<a href="+href+">Login</a>");
-};
 
 exports.oauthcallback = function(req, res){
   config.code = req.query.code;
@@ -86,17 +71,31 @@ function getTransport(res){
     service: "Gmail",
     auth: {XOAuth2: XOAuth2}
   });
-  res.render('mail', { title: 'Mass Personal Mailer' });
+  res.redirect('campaign');
 }
 
+exports.campaign = function(req, res){
+  res.render('mail', { title: 'Mass Personal Mailer' });
+};
+
 exports.index = function(req, res){
-  res.render('index', { title: 'Mass Personal Mailer' });
+    var google_auth = {
+    protocol: 'https',
+    host: 'accounts.google.com/o/oauth2/auth',
+    query: {
+      scope: 'https://mail.google.com https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      redirect_uri: 'http://localhost:3000/oauth2callback',
+      response_type:'code',
+      client_id: '189084383123.apps.googleusercontent.com',
+      access_type: 'offline'
+    }
+  };
+  var auth_url = url.format(google_auth);
+  res.render('index', { title: 'Personal Mails - Avalanche', href:auth_url });
 };
 
 exports.send_email = function(req, res){
-  var raw_data = req.body.json_body.split('None').join("' '").split('u\'').join('\'').split('\'').join('"').split('""').join('"');
-  console.log(raw_data);
-  var email_data = JSON.parse(raw_data); // The U split should not be done...JSON not pydict
+  var email_data = JSON.parse(req.body.json_body); // The U split should not be done...JSON not pydict
 
   email_data.forEach(function(element){
     var email_body = req.body.email_body;
@@ -105,7 +104,7 @@ exports.send_email = function(req, res){
     var email_address = '';
 
     for(var key in element){
-      // Needs to be removed here just to process the current structure given
+      // Needs to be removed here just to process the current structure given or parsed with a different structure...
       if(key==='user_name'){
         element[key] = element[key].split(' ')[0];
       }
@@ -113,7 +112,12 @@ exports.send_email = function(req, res){
         element[key] = element[key].split('/')[1];
       }
       if(key==='user_email'){
-        email_address = element[key] ? element[key] : element['emails'][0];
+        try{
+          email_address = element[key] ? element[key] : element['user_emails'][0];
+        } catch(e){
+          console.log(e+' -> ');
+          console.log(element);
+        }
       }
       email_body = email_body.split('|'+key+'|').join(element[key]);
       email_subject = email_subject.split('|'+key+'|').join(element[key]);
@@ -127,19 +131,32 @@ exports.send_email = function(req, res){
       text: email_body + email_signature // plaintext body
     };
 
-    // send mail with defined transport object
-    setTimeout(
-      smtpTransport.sendMail(mailOptions, function(error, response){
-        if(error){
-          console.log(error);
-          res.send(error);
-        }else{
-          console.log(response.message);
-          res.send("Message sent: " + response.message);
-        }
-          // if you don't want to use this transport object anymore, uncomment following line
-          //smtpTransport.close(); // shut down the connection pool, no more messages
-      }), 2000);
+    if(mailOptions.to){
+      // send mail with defined transport object
+
+      try{
+        setTimeout(
+          smtpTransport.sendMail(mailOptions, function(error, response){
+            if(error){
+              console.log(mailOptions);
+              console.log(error);
+            }else{
+              console.log(response.message);
+            }
+              // if you don't want to use this transport object anymore, uncomment following line
+              //smtpTransport.close(); // shut down the connection pool, no more messages
+          }), 2000);
+
+      }catch(error){
+        console.log(mailOptions);
+        console.log(error);
+
+      }
+    }else{
+      console.log('Nope!');
+      console.log(mailOptions);
+    }
+
   });
 
 
