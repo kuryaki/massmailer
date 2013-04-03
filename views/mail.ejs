@@ -45,7 +45,8 @@
     }
     catch(error){
       parsed_json = error.toString();
-      console.log('Error' + parsed_json);
+      console.log($('#json_body').val());
+      console.log(error);
     }
 
     $('#json_body').val(JSON.stringify(parsed_json));

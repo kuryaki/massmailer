@@ -97,7 +97,7 @@ exports.index = function(req, res){
 exports.send_email = function(req, res){
   var email_data = JSON.parse(req.body.json_body); // The U split should not be done...JSON not pydict
 
-  email_data.forEach(function(element){
+  var emails_to_send = email_data.map(function(element){
     var email_body = req.body.email_body;
     var email_subject = req.body.subject;
     var email_signature = '\n\n'+req.body.signature;
@@ -106,7 +106,7 @@ exports.send_email = function(req, res){
     for(var key in element){
       // Needs to be removed here just to process the current structure given or parsed with a different structure...
       if(key==='user_name'){
-        element[key] = element[key].split(' ')[0];
+        element[key] = element[key] ? element[key].split(' ')[0] : 'man';
       }
       if(key==='best_repo'){
         element[key] = element[key].split('/')[1];
@@ -132,32 +132,33 @@ exports.send_email = function(req, res){
     };
 
     if(mailOptions.to){
+      return mailOptions;
       // send mail with defined transport object
 
-      try{
-        setTimeout(
-          smtpTransport.sendMail(mailOptions, function(error, response){
-            if(error){
-              console.log(mailOptions);
-              console.log(error);
-            }else{
-              console.log(response.message);
-            }
-              // if you don't want to use this transport object anymore, uncomment following line
-              //smtpTransport.close(); // shut down the connection pool, no more messages
-          }), 2000);
-
-      }catch(error){
-        console.log(mailOptions);
-        console.log(error);
-
-      }
     }else{
       console.log('Nope!');
       console.log(mailOptions);
     }
 
+
   });
 
+  sendEmails(emails_to_send);
 
 };
+
+function sendEmails(emails_to_send){
+  var mail_element = emails_to_send.shift();
+  if(mail_element){
+    smtpTransport.sendMail(mail_element, function(error, response){
+      if(error){
+        console.log(error);
+      }else{
+        console.log(response.message);
+      }
+    });
+    setTimeout(function(){sendEmails(emails_to_send);},5000);
+  }else{
+    console.log('Done!');
+  }
+}
